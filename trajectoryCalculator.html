@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <!-- Character encoding for the document -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive design -->
+    <title>Projectile Trajectory Visualizer</title> <!-- Page title -->
+    <style>
+        /* Styling for the vertical slider */
+        .vertical-slider {
+            writing-mode: bt-lr; /* Sets the slider to vertical mode */
+            -webkit-appearance: slider-vertical; /* Customizes the appearance for webkit browsers */
+            width: 10px; /* Width of the slider */
+            height: 200px; /* Height of the slider */
+        }
+        #canvas {
+            border: 1px solid black; /* Border for the canvas */
+        }
+    </style>
+</head>
+<body>
+    <h2>Projectile Trajectory Calculator</h2> <!-- Main heading -->
+    <form id="trajectoryForm"> <!-- Form for user input -->
+        <label for="velocity">Initial Velocity (m/s):</label> <!-- Label for velocity input -->
+        <input type="range" id="velocity" min="0" max="100" value="50"> <!-- Velocity slider -->
+        <span id="velocityValue">50</span> m/s <!-- Display current velocity value -->
+        <br><br>
+        
+        <label for="angle">Launch Angle (degrees):</label> <!-- Label for angle input -->
+        <input type="range" id="angle" min="0" max="90" value="45" class="vertical-slider"> <!-- Angle slider -->
+        <span id="angleValue">45</span>° <!-- Display current angle value -->
+        <br><br>
+        
+        <label for="gravity">Gravity (m/s²):</label> <!-- Label for gravity input -->
+        <input type="number" id="gravity" value="9.81" required> <!-- Gravity input -->
+    </form>
+
+    <h3>Results</h3> <!-- Subheading for results -->
+    <p id="timeOfFlight">Time of Flight: </p> <!-- Placeholder for time of flight result -->
+    <p id="maxHeight">Maximum Height: </p> <!-- Placeholder for maximum height result -->
+    <p id="range">Range: </p> <!-- Placeholder for range result -->
+
+    <button onclick="fireProjectile()">Fire</button> <!-- Button to fire projectile -->
+
+    <canvas id="canvas" width="850" height="450"></canvas> <!-- Canvas for trajectory visualization -->
+
+    <!-- Link to external JavaScript file -->
+    <script src="projectileScript.js"></script> <!-- JavaScript file -->
+</body>
+</html>
