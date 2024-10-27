@@ -3,51 +3,64 @@ let animationId; // Variable to store the ID of the animation frame
 const yOffset = 50; // Y-offset for drawing the trajectory
 const xOffset = 30; // X-offset to start the trajectory slightly to the right
 
+// Load the tank image
+const tankImage = new Image();
+tankImage.src = 'tank.png';
+
+// Draw the tank on the canvas at the start of the trajectory
+tankImage.onload = function() {
+    drawTank();
+};
+
+// Function to draw the tank image on the canvas
+function drawTank() {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(tankImage, xOffset - 20, canvas.height - yOffset - 20, 50, 30); // Adjust size as needed
+}
+
 // Function to update trajectory calculations and display results
 function updateTrajectory() {
-    // Get user inputs for velocity, angle, and gravity
     velocity = parseFloat(document.getElementById("velocity").value);
     angle = parseFloat(document.getElementById("angle").value);
     gravity = parseFloat(document.getElementById("gravity").value);
 
-    // Update displayed values for velocity and angle
     document.getElementById("velocityValue").innerText = velocity;
     document.getElementById("angleValue").innerText = angle;
 
     const angleRadians = angle * (Math.PI / 180); // Convert angle to radians
 
-    // Calculate time of flight, maximum height, and range
     timeOfFlight = (2 * velocity * Math.sin(angleRadians)) / gravity;
     const maxHeight = Math.pow(velocity * Math.sin(angleRadians), 2) / (2 * gravity);
     const range = (Math.pow(velocity, 2) * Math.sin(2 * angleRadians)) / gravity;
 
-    // Display the calculated results
     document.getElementById("timeOfFlight").innerText = `Time of Flight: ${timeOfFlight.toFixed(2)} s`;
     document.getElementById("maxHeight").innerText = `Maximum Height: ${maxHeight.toFixed(2)} m`;
     document.getElementById("range").innerText = `Range: ${range.toFixed(2)} m`;
 
-    // Draw the trajectory based on the current parameters
     drawTrajectory(velocity, angleRadians, gravity, timeOfFlight);
 }
 
 // Function to draw the projectile's trajectory on the canvas
 function drawTrajectory(velocity, angle, gravity, timeOfFlight) {
-    const canvas = document.getElementById("canvas"); // Get the canvas element
-    const ctx = canvas.getContext("2d"); // Get the 2D drawing context
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawTank(); // Ensure the tank is drawn on the canvas
 
     const scale = 0.8; // Scaling factor for the drawing
     const timeStep = 0.2; // Time increment for drawing points
 
     ctx.beginPath(); // Begin a new path for the trajectory
-    ctx.moveTo(xOffset, canvas.height - yOffset); // Move to starting point, slightly right
+    ctx.moveTo(xOffset, canvas.height - yOffset); // Move to starting point at the bottom left with xOffset
 
     // Loop through time increments to calculate trajectory points
     for (let t = 0; t <= timeOfFlight; t += timeStep) {
         const x = velocity * Math.cos(angle) * t; // Calculate x position
         const y = velocity * Math.sin(angle) * t - 0.5 * gravity * t * t; // Calculate y position
 
-        const canvasX = x * scale + xOffset; // Scale x position and add offset for drawing
+        const canvasX = x * scale + xOffset; // Scale x position for drawing and add xOffset
         const offsetY = yOffset * (1 - t / timeOfFlight); // Calculate offset for the curve
         const canvasY = canvas.height - (y * scale) - offsetY; // Calculate final y position for canvas
 
@@ -66,7 +79,7 @@ function fireProjectile() {
 
     const scale = 0.8; // Scaling factor for the animation
     const angleRadians = angle * (Math.PI / 180); // Convert angle to radians
-    const startX = xOffset; // Starting x position, slightly right
+    const startX = xOffset; // Starting x position with xOffset
     const startY = canvas.height; // Starting y position
     let t = 0; // Time variable for animation
     const timeStep = 0.2; // Time increment for animation
@@ -76,7 +89,7 @@ function fireProjectile() {
     // Function to perform the animation
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-
+        drawTank(); // Ensure tank image remains during animation
         drawTrajectory(velocity, angleRadians, gravity, timeOfFlight); // Redraw the trajectory
 
         const x = velocity * Math.cos(angleRadians) * t; // Calculate current x position
@@ -92,10 +105,9 @@ function fireProjectile() {
         ctx.fill(); // Fill the projectile
         ctx.closePath(); // Close the path
 
-        // Continue the animation if the projectile is still above the ground
-        if (y >= 0) {
+        if (y >= 0) { // Continue animation if projectile is above ground
             t += timeStep; // Increment time
-            animationId = requestAnimationFrame(animate); // Request the next animation frame
+            animationId = requestAnimationFrame(animate); // Request next frame
         }
     }
 
