@@ -21,15 +21,19 @@ tankImage.onload = function() {
 function drawTank() {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(tankImage, tankXOffset, canvas.height - tankYOffset, 50, 30); // Adjust size as needed
-    ctx.drawImage(tankTurret, tankXOffset+25, canvas.height - tankYOffset-10, 25, 15);
 
     // Rotate and draw turret
     ctx.save();
-    ctx.translate(tankXOffset, tankYOffset); // Set pivot point for rotation at the turret's base
-    ctx.rotate(-angle * (Math.PI / 180)); // Rotate turret according to angle
-    ctx.drawImage(tankTurret, -10, -30, 25, 15); // Draw turret rotated
+    ctx.translate(tankXOffset+25, canvas.height - 25); // Set pivot point for rotation at the turret's base
+    ctx.rotate((-angle+45) * (Math.PI / 180)); // Rotate turret according to angle
+    ctx.drawImage(tankTurret, 0, -15, 25, 15); // Draw turret rotated
     ctx.restore();
+    
+    // Draw tank
+    ctx.drawImage(tankImage, tankXOffset, canvas.height - tankYOffset, 50, 30); // Adjust size as needed
+    //ctx.drawImage(tankTurret, tankXOffset+25, canvas.height - tankYOffset-10, 25, 15);
+
+    
 }
 
 // Function to update trajectory calculations and display results
