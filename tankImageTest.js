@@ -1,11 +1,16 @@
 let velocity, angle, gravity, timeOfFlight; // Variables for physics parameters
 let animationId; // Variable to store the ID of the animation frame
-const yOffset = 50; // Y-offset for drawing the trajectory
-const xOffset = 30; // X-offset to start the trajectory slightly to the right
+const yOffset = 30; // Y-offset for drawing the trajectory
+const xOffset = 450; // X-offset to start the trajectory slightly to the right
+const tankYOffset = 30; // Y-offset for drawing the tank
+const tankXOffset = 425; // X-offset for drawing the tank in the middle
 
 // Load the tank image
 const tankImage = new Image();
-tankImage.src = 'tank.png';
+tankImage.src = 'tank_with_dome.png';
+const tankTurret = new Image();
+tankTurret.src = 'player_1_barrel.png';
+
 
 // Draw the tank on the canvas at the start of the trajectory
 tankImage.onload = function() {
@@ -16,7 +21,15 @@ tankImage.onload = function() {
 function drawTank() {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(tankImage, xOffset - 20, canvas.height - yOffset - 20, 50, 30); // Adjust size as needed
+    ctx.drawImage(tankImage, tankXOffset, canvas.height - tankYOffset, 50, 30); // Adjust size as needed
+    ctx.drawImage(tankTurret, tankXOffset+25, canvas.height - tankYOffset-10, 25, 15);
+
+    // Rotate and draw turret
+    ctx.save();
+    ctx.translate(tankXOffset, tankYOffset); // Set pivot point for rotation at the turret's base
+    ctx.rotate(-angle * (Math.PI / 180)); // Rotate turret according to angle
+    ctx.drawImage(tankTurret, -10, -30, 25, 15); // Draw turret rotated
+    ctx.restore();
 }
 
 // Function to update trajectory calculations and display results
@@ -100,7 +113,7 @@ function fireProjectile() {
         const canvasY = startY - (y * scale) - offsetY; // Calculate final y position for canvas
 
         ctx.beginPath(); // Begin a new path for the projectile
-        ctx.arc(canvasX, canvasY, 15, 0, 2 * Math.PI); // Draw the projectile as a circle
+        ctx.arc(canvasX, canvasY, 10, 0, 2 * Math.PI); // Draw the projectile as a circle
         ctx.fillStyle = "orange"; // Set fill color for the projectile
         ctx.fill(); // Fill the projectile
         ctx.closePath(); // Close the path
