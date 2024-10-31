@@ -1,6 +1,6 @@
 let velocity, angle, gravity, timeOfFlight; // Variables for physics parameters
 let animationId; // Variable to store the ID of the animation frame
-const yOffset = 30; // Y-offset for drawing the trajectory
+const yOffset = 27; // Y-offset for drawing the trajectory
 const xOffset = 450; // X-offset to start the trajectory slightly to the right
 const tankYOffset = 30; // Y-offset for drawing the tank
 const tankXOffset = 425; // X-offset for drawing the tank in the middle
@@ -24,14 +24,13 @@ function drawTank() {
 
     // Rotate and draw turret
     ctx.save();
-    ctx.translate(tankXOffset+25, canvas.height - 25); // Set pivot point for rotation at the turret's base
-    ctx.rotate((-angle+45) * (Math.PI / 180)); // Rotate turret according to angle
-    ctx.drawImage(tankTurret, 0, -15, 25, 15); // Draw turret rotated
+    ctx.translate(xOffset, canvas.height - yOffset); // Set pivot point for rotation at the turret's base
+    ctx.rotate((-angle) * (Math.PI / 180)); // Rotate turret according to angle
+    ctx.drawImage(tankTurret, 0, -5, 25, 15); // Draw turret rotated
     ctx.restore();
     
     // Draw tank
     ctx.drawImage(tankImage, tankXOffset, canvas.height - tankYOffset, 50, 30); // Adjust size as needed
-    //ctx.drawImage(tankTurret, tankXOffset+25, canvas.height - tankYOffset-10, 25, 15);
 
     
 }
