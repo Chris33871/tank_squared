@@ -37,18 +37,18 @@ function drawTank() {
 
 // Function to update trajectory calculations and display results
 function updateTrajectory() {
-    velocity = parseFloat(document.getElementById("velocity").value);
-    angle = parseFloat(document.getElementById("angle").value);
-    gravity = parseFloat(document.getElementById("gravity").value);
+    velocity = parseFloat(document.getElementById("velocity").value); // Gets the velocity
+    angle = parseFloat(document.getElementById("angle").value); // Gets the angle
+    gravity = parseFloat(document.getElementById("gravity").value); // Gets the gravity
 
     document.getElementById("velocityValue").innerText = velocity;
     document.getElementById("angleValue").innerText = angle;
 
     const angleRadians = angle * (Math.PI / 180); // Convert angle to radians
 
-    timeOfFlight = (2 * velocity * Math.sin(angleRadians)) / gravity;
-    const maxHeight = Math.pow(velocity * Math.sin(angleRadians), 2) / (2 * gravity);
-    const range = (Math.pow(velocity, 2) * Math.sin(2 * angleRadians)) / gravity;
+    timeOfFlight = (2 * velocity * Math.sin(angleRadians)) / gravity; // Calculates time
+    const maxHeight = Math.pow(velocity * Math.sin(angleRadians), 2) / (2 * gravity); // Calculates max height
+    const range = (Math.pow(velocity, 2) * Math.sin(2 * angleRadians)) / gravity; // Calculates range
 
     document.getElementById("timeOfFlight").innerText = `Time of Flight: ${timeOfFlight.toFixed(2)} s`;
     document.getElementById("maxHeight").innerText = `Maximum Height: ${maxHeight.toFixed(2)} m`;
