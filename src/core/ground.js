@@ -25,19 +25,13 @@ export class Ground {
 
     // Check if anything is lower than ground and if so move it just about it
     isThereCollision(collidingSprite){
-        console.log("Colliding sprite", collidingSprite);
         const surface = this.getGroundSurface()
-        //const yPosition = collidingSprite.sprite.bounds.maxY;
         const yPosition = collidingSprite.playerY;
         console.log("Sprite yPosition", yPosition);
         console.log("Ground lvl", surface);
-        /*
-        */
-        if (yPosition < surface){
-            console.log("yPos < surface");
-            //collidingSprite.sprite.bounds.maxY = surface - 60
-            collidingSprite.playerY = surface - 50
-            console.log("Updated yPosition", collidingSprite.playerY);
+        if (yPosition > surface){
+            collidingSprite.playerY = surface - 52
+            console.log("Updated playerY", collidingSprite.playerY);
         };
     };
 };

@@ -1,4 +1,4 @@
-### File Structure
+### File Structur
 
 my-pixi-game/\
 │\
@@ -50,6 +50,7 @@ Ideas/Possible Development paths:
 ### We are currently working on:
 - [ ] Implementing Bullet Tragectory
 - [ ] Collisions between players and environment
+- [ ] Adding terrain variability
 - [ ] Functional game screens/loops
 - [ ] Animations for both players and environment
 - [ ] Update Sprites for players, background and other props

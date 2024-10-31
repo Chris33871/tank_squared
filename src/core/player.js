@@ -1,4 +1,4 @@
-import { Assets, Sprite, Application } from "pixi.js";
+import { Assets, Sprite, Application, Point } from "pixi.js";
 
 export class tankPlayer {
     constructor(playerX, playerY){
@@ -67,5 +67,12 @@ export class tankPlayer {
         } else if (e.keyCode == 65) {
             this.keys[e.keyCode] = false;
         }
+    }
+
+    // TODO: Add gravity to the tank
+    gravity(){
+        const movementSpeed = 0.5;
+        let pointObject = new Point(0)
+        console.log("point object", pointObject);
     }
 }
