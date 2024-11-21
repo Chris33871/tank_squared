@@ -12,20 +12,20 @@ import { TrajectoryCalculator } from "./core/trajectoryCalculator.js";
         resizeTo: window
     });
 
-    app.canvas.style.position = 'absolute';
+    //app.canvas.style.position = 'absolute';
     document.body.appendChild(app.canvas);
     const [appHeight, appWidth] = [app.renderer.height, app.renderer.width];
+
+    // Adding background
+    const background = new Background(appHeight - 150, appWidth, app);
+    await background.initialiseBackground();
+    app.stage.addChild(background.getBackground());
 
     // Adding ground
     const activeGround = new Ground(app)
     await activeGround.initialiseGround();
     app.stage.addChild(activeGround.getGround());
 
-    // Adding background
-    const background = new Background(appHeight - 150, appWidth);
-    await background.initialiseBackground();
-    app.stage.addChild(background.getBackground());
-  
     // Adding player
     let [playerOneX, playerOneY] = [550, appHeight - 300];
     const playerOneTexture = await Assets.load('assets/images/tank.png');
