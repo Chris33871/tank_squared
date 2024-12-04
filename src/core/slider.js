@@ -64,7 +64,6 @@ export class Slider {
 
     // normalised the values from 0 - 1
     this.normalisedSliderValue = this.handle.x / this.sliderWidth;
-    console.log(this.normalisedSliderValue);
   }
 
   addGraphicsToStage() {

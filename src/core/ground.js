@@ -1,18 +1,18 @@
 import { Graphics } from "pixi.js";
+import { World, Circle, Vec2, Edge } from "planck";
 
 export class Ground {
-    constructor(app){
+    constructor(app, world){
         this.app = app;
-        this.ground = null;
+        this.world = world;
         this.appHeight = this.app.renderer.height;
         this.appWidth = this.app.renderer.width;
-
-        // Store ground points for interpolation
+        this.groundGraphics = new Graphics();
         this.groundPoints = [];
     };
 
     async initialiseGround() {
-        // Define the ground shape with points
+
         this.groundPoints = [
             { x: 0, y: this.appHeight - 200 },
             { x: this.appWidth / 20, y: this.appHeight - 180 },
@@ -32,58 +32,48 @@ export class Ground {
             { x: this.appWidth, y: this.appHeight - 250 }
         ];
 
-        const groundGraphics = new Graphics()
-            .beginFill(0x654321)
-            .moveTo(this.groundPoints[0].x, this.groundPoints[0].y);
+        // INFO: Applying Physics
+        const scale = 25;
+        const screenWidth = this.appWidth / scale;
 
-        for (let i = 1; i < this.groundPoints.length; i++) {
-            groundGraphics.lineTo(this.groundPoints[i].x, this.groundPoints[i].y);
+        var ground = this.world.createBody({
+            type: 'static',
+            position: new Vec2(0.0, -10.0),
+        });
+        const groundFD = {density: 0, friction: 0.6} // FD stands for friction density
+
+        ground.createFixture(new Edge(new Vec2(-screenWidth / 2, 0), new Vec2(screenWidth / 2, 0)), groundFD);
+        for (let i = 1; i < this.groundPoints.length; i++){
+            const vec1 = new Vec2(this.groundPoints[i - 1].x / scale, -(this.groundPoints[i - 1].y / scale));
+            const vec2 = new Vec2(this.groundPoints[i].x / scale, -(this.groundPoints[i].y / scale));
+
+            console.log("Vec1:", vec1, "Vec2:", vec2);
+            ground.createFixture(new Edge(vec1, vec2), groundFD);
         }
 
-        groundGraphics
+        // INFO: Applying Graphics
+        this.groundGraphics.beginFill(0x654321);
+        this.groundGraphics.moveTo(this.groundPoints[0].x, this.groundPoints[0].y);
+        for (let i = 1; i < this.groundPoints.length; i++) {
+            this.groundGraphics.lineTo(this.groundPoints[i].x, this.groundPoints[i].y);
+        }
+
+        this.groundGraphics // Used to close off the ground
             .lineTo(this.appWidth, this.appHeight)
             .lineTo(0, this.appHeight)
             .closePath()
             .endFill();
 
-        this.ground = groundGraphics;
+        this.app.stage.addChild(this.groundGraphics);
     }
 
     getGround(){
-        return this.ground;
-    };
-
-    /**
-     * Interpolates to find the ground height at a specific x position.
-     * @param {number} x The x-coordinate to check.
-     * @returns {number} The interpolated y-coordinate (ground height) at x.
-     */
-    getGroundHeightAtX(x) {
-        // Ensure x is within bounds
-        if (x <= this.groundPoints[0].x) {
-            return this.groundPoints[0].y;
-        }
-        if (x >= this.groundPoints[this.groundPoints.length - 1].x) {
-            return this.groundPoints[this.groundPoints.length - 1].y;
-        }
-
-        // Find the two points the x is between
-        for (let i = 0; i < this.groundPoints.length - 1; i++) {
-            const p1 = this.groundPoints[i];
-            const p2 = this.groundPoints[i + 1];
-
-            if (x >= p1.x && x <= p2.x) {
-                // Linear interpolation formula
-                const t = (x - p1.x) / (p2.x - p1.x); // Normalized distance between p1 and p2
-                return p1.y + t * (p2.y - p1.y);
-            }
-        }
-        // Default fallback
-        return this.appHeight;
+        return this.groundGraphics;
     }
 
     isThereCollision(collidingSprite) {
-        const groundHeightAtSprite = this.getGroundHeightAtX(collidingSprite.playerX);
+        //const groundHeightAtSprite = this.getGroundHeightAtX(collidingSprite.playerX);
+        const groundHeightAtSprite = 500;
         const spriteBottomY = collidingSprite.playerY + 50;
 
         if (spriteBottomY > groundHeightAtSprite) {
