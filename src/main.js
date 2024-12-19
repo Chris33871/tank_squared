@@ -1,4 +1,4 @@
-import { Application, Assets } from "pixi.js";
+import { Application, Assets, Graphics } from "pixi.js";
 import { Slider } from "./core/slider.js";
 import { TankPlayer } from "./core/player";
 import { Ground } from "./core/ground.js";
@@ -6,6 +6,9 @@ import { Background } from "./scenes/mapImage.js";
 import { DebugRenderer } from "./core/debugOutlines.js";
 import { World, Vec2 } from "planck";
 import { coordConverter } from "./core/coordConverter.js";
+import { MapGenerator } from "./core/terrainGeneration/mapGenerator.js";
+import { Cell } from "./core/terrainGeneration/cell.js";
+import { TerrainCell } from "./core/terrainGeneration/terrainCell.js";
 
 (async () => {
 
@@ -63,6 +66,11 @@ import { coordConverter } from "./core/coordConverter.js";
 
     app.ticker.maxFPS = 60;
     const debugRenderer = new DebugRenderer(world, app, sf);
+
+    // adding mapgenerator
+    const mapGenerator = new MapGenerator(app);
+const terrain = mapGenerator.generateTerrain(app, 128, 256, 2, 2);
+    mapGenerator.drawTerrain(app, terrain);
 
     app.ticker.add(() => {
         // takes values from the sliders, and calculates the vertical, and horizontal motion
