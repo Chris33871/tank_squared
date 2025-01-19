@@ -85,9 +85,9 @@ export async function startGame() {
 
         world.step(1 / 60);
         const currentTime = Date.now();
+        console.log("Player Turn: ", playerTurn);
         if (playerTurn) {
             if (playerOne.checkSpaceBarInput() && currentTime - lastFireTime >= fireCooldown) {
-                // playerOne.openFire(velX, velY);
                 playerOne.createNewBullet();
                 const pos = playerOne.getTankBodyPos();
                 playerOne.getBullet().openFire(pos, velX, velY);
@@ -106,7 +106,7 @@ export async function startGame() {
         } else {
             if (playerTwo.checkSpaceBarInput() && currentTime - lastFireTime >= fireCooldown) {
                 playerTwo.createNewBullet();
-                const pos = playerOne.getTankBodyPos();
+                const pos = playerTwo.getTankBodyPos();
                 playerTwo.getBullet().openFire(pos, velX, velY);
                 shellVisible = true;
                 lastFireTime = currentTime;
@@ -124,7 +124,9 @@ export async function startGame() {
 
         if (playerOne.getBullet()) {
             playerOne.getBullet().updateShell();
-        } else if (playerTwo.getBullet()) {
+        }
+
+        if (playerTwo.getBullet()) {
             playerTwo.getBullet().updateShell();
         }
 
@@ -142,7 +144,7 @@ export async function startGame() {
 
         playerOne.updatePlayer();
         playerTwo.updatePlayer();
-        // debugRenderer.render();
+        debugRenderer.render();
     })
 }
 
