@@ -28,18 +28,16 @@ import { Converter } from "./core/Converter.js";
     let converter = new Converter(scaleFactor);
 
     // Adding player
-    const shellTexture = await Assets.load("assets/images/bullet.png");
+    const shellTexture = await Assets.load('assets/images/bullet.png');
     const playerOneTexture = await Assets.load('assets/images/tank.png');
     const playerOne = new TankPlayer(appWidth / 10, appHeight - 300, app, playerOneTexture, scaleFactor, converter, world, shellTexture);
     await playerOne.initialisePlayerSprite();
-    await playerOne.initialiseShellSprite();
     playerOne.setupKeyboardControls();
 
     // Adding second player
     const playerTwoTexture = await Assets.load('assets/images/tank.png');
     const playerTwo = new TankPlayer(appWidth / 1.2, appHeight - 300, app, playerTwoTexture, scaleFactor, converter, world, shellTexture);
     await playerTwo.initialisePlayerSprite();
-    await playerTwo.initialiseShellSprite();
     playerTwo.setupKeyboardControls();
 
     // Adding projectile mechanism
@@ -88,7 +86,10 @@ import { Converter } from "./core/Converter.js";
         const currentTime = Date.now();
         if (playerTurn) {
             if (playerOne.checkSpaceBarInput() && currentTime - lastFireTime >= fireCooldown) {
-                playerOne.openFire(velX, velY);
+                // playerOne.openFire(velX, velY);
+                playerOne.createNewBullet();
+                const pos = playerOne.getTankBodyPos();
+                playerOne.getBullet().openFire(pos, velX, velY);
                 shellVisible = true;
                 lastFireTime = currentTime;
                 playerTurn = false
@@ -103,7 +104,9 @@ import { Converter } from "./core/Converter.js";
             }
         } else {
             if (playerTwo.checkSpaceBarInput() && currentTime - lastFireTime >= fireCooldown) {
-                playerTwo.openFire(velX, velY);
+                playerTwo.createNewBullet();
+                const pos = playerOne.getTankBodyPos();
+                playerTwo.getBullet().openFire(pos, velX, velY);
                 shellVisible = true;
                 lastFireTime = currentTime;
                 playerTurn = true;
@@ -118,18 +121,26 @@ import { Converter } from "./core/Converter.js";
             }
         }
 
-        // TODO: While visible, run the action
-        if (shellVisible) {
-            const shellActive = playerOne.updateShell() || playerTwo.updateShell();
-            // TODO: Change from a visible flag to a collided with flag
-            if (shellActive == 0) {
-                shellVisible = false;
-            }
-            console.log("shell still active", shellActive);
+        if (playerOne.getBullet()) {
+            playerOne.getBullet().updateShell();
+        } else if (playerTwo.getBullet()) {
+            playerTwo.getBullet().updateShell();
         }
+
+        // const shellActive = playerOne.updateShell() || playerTwo.updateShell();
+
+        // // TODO: While visible, run the action
+        // if (shellVisible) {
+        //     const shellActive = playerOne.updateShell() || playerTwo.updateShell();
+        //     // TODO: Change from a visible flag to a collided with flag
+        //     if (shellActive == 0) {
+        //         shellVisible = false;
+        //     }
+        //     console.log("shell still active", shellActive);
+        // }
 
         playerOne.updatePlayer();
         playerTwo.updatePlayer();
-        debugRenderer.render();
+        // debugRenderer.render();
     })
 })();
