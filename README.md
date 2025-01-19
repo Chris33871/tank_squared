@@ -77,6 +77,6 @@ my-pixi-game/\
 - [ ] Online multiplayer 
 
 ### Possible features:
-- [ ] Larger and more varied set of maps
+- [ ] Larger and more varied set of maps - Map generation (NJ)
 - [ ] Different tank options
 - [ ] Play against AI

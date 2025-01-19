@@ -1,0 +1,15 @@
+@import url("menu.css");
+
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+body {
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+}
+* {
+    box-sizing: border-box;
+} 
