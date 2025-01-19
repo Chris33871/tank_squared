@@ -66,6 +66,9 @@ export async function startGame() {
     let lastFireTime = 0;
     let shellVisible = false;
 
+    let playerOneShowBullet = false;
+    let playerTwoTurnShowBullet = false;
+
     app.ticker.add(() => {
 
         // takes values from the sliders, and calculates the vertical, and horizontal motion
@@ -83,6 +86,7 @@ export async function startGame() {
         const velX = magnitudeVelocity * Math.cos(launchAngle);
         const velY = magnitudeVelocity * Math.sin(launchAngle);
 
+
         world.step(1 / 60);
         const currentTime = Date.now();
         console.log("Player Turn: ", playerTurn);
@@ -94,12 +98,15 @@ export async function startGame() {
                 shellVisible = true;
                 lastFireTime = currentTime;
                 playerTurn = false
+                playerOneShowBullet = false;
                 playerTwo.resetMoveDist();
             } else {
                 if (playerOne.moveDist > 0) {
                     playerOne.movePlayer()
+                    playerOneShowBullet = true;
                 } else {
                     playerTurn = false;
+                    playerOneShowBullet = false;
                     playerTwo.resetMoveDist();
                 }
             }
@@ -111,23 +118,26 @@ export async function startGame() {
                 shellVisible = true;
                 lastFireTime = currentTime;
                 playerTurn = true;
+                playerTwoTurnShowBullet = false;
                 playerOne.resetMoveDist();
             } else {
                 if (playerTwo.moveDist > 0) {
                     playerTwo.movePlayer();
+                    playerTwoTurnShowBullet = true;
                 } else {
                     playerTurn = true;
                     playerOne.resetMoveDist();
+                    playerTwoTurnShowBullet = false;
                 }
             }
         }
 
         if (playerOne.getBullet()) {
-            playerOne.getBullet().updateShell();
+            playerOne.getBullet().updateShell(playerOneShowBullet);
         }
 
         if (playerTwo.getBullet()) {
-            playerTwo.getBullet().updateShell();
+            playerTwo.getBullet().updateShell(playerTwoTurnShowBullet);
         }
 
         // const shellActive = playerOne.updateShell() || playerTwo.updateShell();

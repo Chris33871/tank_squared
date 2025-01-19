@@ -11,7 +11,7 @@ export class Bullet {
         this.shellSprite = null;
     }
 
-    updateShell() {
+    updateShell(showBullet) {
         if (this.physicalPlanckJSShell) {
             const bodyPos = this.physicalPlanckJSShell.getPosition();
             this.shellSprite.x = bodyPos.x * this.scale;
@@ -24,7 +24,10 @@ export class Bullet {
                 this.shellSprite.visible = false;
                 this.world.destroyBody(this.physicalPlanckJSShell);
                 this.physicalPlanckJSShell = null; // Reset the shell
-                return 0;
+            } else if (showBullet) {
+                this.shellSprite.visible = false;
+                this.world.destroyBody(this.physicalPlanckJSShell);
+                this.physicalPlanckJSShell = null;
             }
         }
     }
