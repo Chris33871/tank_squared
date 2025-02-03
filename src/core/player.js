@@ -1,5 +1,5 @@
+import { Vec2, WheelJoint, Circle, RevoluteJoint } from "planck";
 import { Sprite } from "pixi.js";
-import { Vec2, Circle, RevoluteJoint } from "planck";
 
 export class TankPlayer {
     constructor(playerX, playerY, app, playerTexture, scale, coordConverter, world, shellTexture) {
@@ -19,9 +19,11 @@ export class TankPlayer {
         this.wheelFront = null;
         this.springFront = null;
         this.springBack = null;
+        this.spring = null;
         this.physicalShell = null;
         this.shellTexture = shellTexture;
         this.shellSprite = null;
+        this.playerCannon = null;
     }
 
     // INFO: Player Code
@@ -43,31 +45,53 @@ export class TankPlayer {
             restitution: 0.01
         })
 
-        let [planckX, planckY] = [this.playerBody.getPosition().x, this.playerBody.getPosition().y] // x,y position according to planck
+        let [playerBodyX, playerBodyY] = [this.playerBody.getPosition().x, this.playerBody.getPosition().y] // x,y position according to planck
         const wheelFD = { density: 1, friction: 1 }
 
-        let wheelBack = this.world.createBody({ type: "dynamic", position: Vec2(planckX - 1.4, planckY - 1.2) })
+        let wheelBack = this.world.createBody({ type: "dynamic", position: Vec2(playerBodyX - 1.4, playerBodyY - 1.2) })
         wheelBack.createFixture(new Circle(0.2), wheelFD)
-        let wheelFront = this.world.createBody({ type: "dynamic", position: Vec2(planckX + 1, planckY - 1.2) })
+
+        let wheelMiddleBack = this.world.createBody({type: "dynamic", position: Vec2(playerBodyX - 0.7, playerBodyY - 1.2)})
+        wheelMiddleBack.createFixture(new Circle(0.2), wheelFD)
+
+        let wheelMiddleFront = this.world.createBody({type: "dynamic", position: Vec2(playerBodyX + 0.3, playerBodyY - 1.2)})
+        wheelMiddleFront.createFixture(new Circle(0.2), wheelFD)
+
+        let wheelFront = this.world.createBody({ type: "dynamic", position: Vec2(playerBodyX + 1, playerBodyY - 1.2) })
         wheelFront.createFixture(new Circle(0.2), wheelFD)
-        this.wheelFront = wheelFront;
 
-        const restitutionValue = 0.05;
-        const maxMotorTorque = 50;
-        const initialMotorSpeed = 0.0;
-        const frequencyHz = 100;
-        const dampingRatio = 1;
-        this.springBack = this.world.createJoint(
-            new RevoluteJoint({
-                motorSpeed: initialMotorSpeed, maxMotorTorque: maxMotorTorque, restitution: restitutionValue,
-                enableMotor: true, frequencyHz: frequencyHz, dampingRatio: dampingRatio
-            }, this.playerBody, wheelBack, wheelBack.getPosition()));
+        class WheelSpring {
+            constructor(world, playerBody, wheel) {
+                this.world = world;
+                this.playerBody = playerBody;
+                this.wheel = wheel;
+                this.restitutionValue = 0.005;
+                this.dampingRatio = 1;
+                this.frequencyHz = 0.2;
+                this.maxMotorTorque = 50;
+                this.initialMotorSpeed = 0.0;
+                this.collideConnected = true;
+            }
 
-        this.springFront = this.world.createJoint(
-            new RevoluteJoint({
-                motorSpeed: initialMotorSpeed, maxMotorTorque: maxMotorTorque, restitution: restitutionValue,
-                enableMotor: true, frequencyHz: frequencyHz, dampingRatio: dampingRatio
-            }, this.playerBody, wheelFront, wheelFront.getPosition()));
+            createSpring() {
+                this.spring = this.world.createJoint(
+                    new RevoluteJoint({
+                        motorSpeed: this.initialMotorSpeed, maxMotorTorque: this.maxMotorTorque, enableMotor: true, 
+                        frequencyHz: this.frequencyHz, dampingRatio: this.dampingRatio, restitution: this.restitutionValue
+                    }, this.playerBody, this.wheel, this.wheel.getPosition(), new Vec2(0.0, 1))
+                );
+            }
+        }
+
+        this.springBack = new WheelSpring(this.world, this.playerBody, wheelBack);
+        this.springMiddleBack = new WheelSpring(this.world, this.playerBody, wheelMiddleBack);
+        this.springMiddleFront = new WheelSpring(this.world, this.playerBody, wheelMiddleFront);
+        this.springFront = new WheelSpring(this.world, this.playerBody, wheelFront);
+
+        this.springBack.createSpring();
+        this.springMiddleBack.createSpring();
+        this.springMiddleFront.createSpring();
+        this.springFront.createSpring();
 
 
         // INFO: Player Sprite
@@ -81,6 +105,24 @@ export class TankPlayer {
         this.playerSprite = playerSprite;
 
         this.app.stage.addChild(this.playerSprite);
+
+
+        // INFO: Tank cannon
+        const playerCannon = this.world.createBody({
+            type: "dynamic",
+            position: Vec2(playerBodyX + 0.1, playerBodyY + 1),
+            gravityScale: 0.5
+        });
+
+        let rectVertices = [Vec2(0, 0), Vec2(0.2, 0), Vec2(0.2, 1.6), Vec2(0, 1.6)];
+        playerCannon.createFixture({shape: planck.Polygon(rectVertices), density: 0.5});
+
+        // TODO: Create a joint to pair the cannon with the tank
+        const cannonBase = this.world.createJoint(
+            new RevoluteJoint({}, this.playerBody, playerCannon, playerCannon.getPosition(), new Vec2(1, 1))
+        );
+
+        this.playerCannon = playerCannon;
     }
 
     updatePlayer() {
@@ -93,41 +135,42 @@ export class TankPlayer {
 
 
     getPlayerMotorSpeed() {
-        return this.springFront.getMotorSpeed();
+        return this.springFront.spring.getMotorSpeed();
     }
 
     resetPlayerMotorSpeed() {
-        this.springFront.setMotorSpeed(0);
-        this.springFront.enableMotor(true);
-        this.springBack.setMotorSpeed(0);
-        this.springBack.enableMotor(true);
+        this.springBack.spring.setMotorSpeed(0);
+        this.springMiddleBack.spring.setMotorSpeed(0);
+        this.springMiddleFront.spring.setMotorSpeed(0);
+        this.springFront.spring.setMotorSpeed(0);
     }
 
 
     movePlayer() {
         if (this.moveDist > 0) {
             if (this.keys['68']) {
-                this.springFront.setMotorSpeed(-this.playerSpeed);
-                this.springFront.enableMotor(true);
-                this.springBack.setMotorSpeed(-this.playerSpeed);
-                this.springBack.enableMotor(true);
+                this.springBack.spring.setMotorSpeed(-this.playerSpeed);
+                this.springMiddleBack.spring.setMotorSpeed(-this.playerSpeed);
+                this.springMiddleFront.spring.setMotorSpeed(-this.playerSpeed);
+                this.springFront.spring.setMotorSpeed(-this.playerSpeed);
 
                 this.playerSprite.scale.x = Math.abs(this.playerSprite.scale.x);
             } else if (this.keys['65']) {
-                this.springFront.setMotorSpeed(+this.playerSpeed);
-                this.springFront.enableMotor(true);
-                this.springBack.setMotorSpeed(+this.playerSpeed);
-                this.springBack.enableMotor(true);
+                this.springBack.spring.setMotorSpeed(+this.playerSpeed);
+                this.springMiddleBack.spring.setMotorSpeed(+this.playerSpeed);
+                this.springMiddleFront.spring.setMotorSpeed(+this.playerSpeed);
+                this.springFront.spring.setMotorSpeed(+this.playerSpeed);
 
                 this.playerSprite.scale.x = -Math.abs(this.playerSprite.scale.x);
             } else if (!this.keys["65"] || !this.keys["68"]) {
-                this.springFront.setMotorSpeed(0);
-                this.springFront.enableMotor(true);
-                this.springBack.setMotorSpeed(0);
-                this.springBack.enableMotor(true);
+                this.springBack.spring.setMotorSpeed(0);
+                this.springMiddleBack.spring.setMotorSpeed(0);
+                this.springMiddleFront.spring.setMotorSpeed(0);
+                this.springFront.spring.setMotorSpeed(0);
             }
         }
     }
+
 
     resetMoveDist() {
         this.moveDist = 30;
@@ -190,14 +233,25 @@ export class TankPlayer {
     }
 
 
+    // INFO: Keyboard controls
     checkSpaceBarInput() {
         return this.keys['32'] === true;
     }
 
-    // INFO: Keyboard control
+    // TODO: Move the cannon sprite based on the shooting direction
+    updateCannon(e) {
+        let mouseX = e.clientX;
+        let mouseY = e.clientY;
+
+        var cannonPos = this.playerCannon.getPosition();
+        console.log("cpos", cannonPos);
+    };
+
+
     setupKeyboardControls() {
         window.addEventListener("keydown", this.keysDown.bind(this));
         window.addEventListener("keyup", this.keysUp.bind(this));
+        window.addEventListener("mousemove", this.updateCannon);
     }
 
     keysDown(e) {
