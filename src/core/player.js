@@ -1,8 +1,13 @@
-import { Sprite } from "pixi.js";
+import { Sprite, Graphics } from "pixi.js";
 import { Vec2, Circle, RevoluteJoint, Polygon } from "planck";
 
 export class TankPlayer {
     constructor(playerX, playerY, app, playerTexture, scale, coordConverter, world, shellTexture) {
+        //TODO: Add health bars...
+        this.hp = 100;
+        this.hpRedBarGraphic = null;
+        this.hpGreenBarGraphic = null;
+
         this.world = world;
         this.coordConverter = coordConverter;
         this.app = app;
@@ -153,7 +158,8 @@ export class TankPlayer {
 
         this.physicalShell = this.world.createBody({
             type: "dynamic",
-            position: Vec2(bodyPos.x, bodyPos.y + 1),
+            // this is only a temp fix... waiting for chris to get barrel working...
+            position: Vec2(bodyPos.x, bodyPos.y + 2.2), // slight change to projectile generation, made it higher so it doesnt touch player's body
             fixedRotation: true,
             gravityScale: 0.5,
             bullet: true,
@@ -174,7 +180,7 @@ export class TankPlayer {
     updateShell(mapGenerator) {
         if (this.physicalShell) {
             const bodyPos = this.physicalShell.getPosition();
-            let contactType = this.checkCollisions();
+            let contactType = this.getCollisions();
             this.shellSprite.x = bodyPos.x * this.scale;
             this.shellSprite.y = this.app.renderer.height - (bodyPos.y * this.scale);
 
@@ -188,7 +194,9 @@ export class TankPlayer {
                 this.destroyTerrain(mapGenerator);
                 this.resetAndDestroyShell();
             } else if (contactType == "PolygonCircleContact") {
-                console.log("Bullet has collided with the body of a tank!");
+                //TODO: Setup the Damage Checks...
+                this.resetAndDestroyShell();
+                // console.log("Bullet has collided with the body of a tank!");
             }
         }
     }
@@ -201,7 +209,34 @@ export class TankPlayer {
         }
     }
 
-    checkCollisions() {
+    initialisePlayerHealthBar() {
+        const redGraphics = new Graphics();
+        const greenGraphics = new Graphics();
+
+        redGraphics.rect(-52, -60, 100, 10);
+        redGraphics.fill(0xde3249);
+        greenGraphics.rect(-52, -60, 100, 10);
+        greenGraphics.fill(0x2ee651);
+
+        this.app.stage.addChild(redGraphics);
+        this.app.stage.addChild(greenGraphics);
+        this.hpRedBarGraphic = redGraphics;
+        this.hpGreenBarGraphic = greenGraphics;
+    }
+
+    updatePosPlayerHealthBar() {
+        this.hpRedBarGraphic.x = this.playerSprite.x;
+        this.hpRedBarGraphic.y = this.playerSprite.y;
+        this.hpGreenBarGraphic.x = this.playerSprite.x;
+        this.hpGreenBarGraphic.y = this.playerSprite.y;
+    }
+
+    damagePlayerHealthBar() {
+        //TODO: implement playerhp damage simulating hpbar decrease
+        // this.hpGreenBarGraphic.width -= 1;
+    }
+
+    getCollisions() {
         if (this.physicalShell) {
             for (let contactList = this.physicalShell.getContactList(); contactList; contactList = contactList.next) {
                 let contact = contactList.contact;

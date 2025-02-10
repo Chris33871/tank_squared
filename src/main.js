@@ -34,6 +34,7 @@ export async function startGame() {
     const playerOne = new TankPlayer(appWidth / 10, appHeight - 300, app, playerOneTexture, scaleFactor, converter, world, shellTexture);
     await playerOne.initialisePlayerSprite();
     await playerOne.initialiseShellSprite();
+    playerOne.initialisePlayerHealthBar();
     playerOne.setupKeyboardControls();
 
     // Adding second player
@@ -41,6 +42,7 @@ export async function startGame() {
     const playerTwo = new TankPlayer(appWidth / 1.2, appHeight - 300, app, playerTwoTexture, scaleFactor, converter, world, shellTexture);
     await playerTwo.initialisePlayerSprite();
     await playerTwo.initialiseShellSprite();
+    playerTwo.initialisePlayerHealthBar();
     playerTwo.setupKeyboardControls();
 
     // Adding projectile mechanism
@@ -85,35 +87,51 @@ export async function startGame() {
         world.step(1 / 60);
         const currentTime = Date.now();
         if (playerTurn) {
+            //TODO: Need to enable hit detection, and player turn switching if projectile hits opponent
+
+            // check if player one's projectile has hit the ground, if it has switch turns
+            if (playerOne.getCollisions() == "ChainCircleContact") {
+                playerTurn = false
+                playerOne.resetPlayerMotorSpeed();
+            } else if (playerOne.getCollisions() == "PolygonCircleContact") {
+                console.log("Hit Player Two!");
+                playerTurn = false;
+                playerOne.resetPlayerMotorSpeed();
+            }
+
             if (playerOne.checkSpaceBarInput() && currentTime - lastFireTime >= fireCooldown) {
                 playerOne.openFire(velX, velY);
                 shellVisible = true;
                 lastFireTime = currentTime;
-                playerTurn = false
                 playerTwo.resetMoveDist();
-                playerOne.resetPlayerMotorSpeed();
+                playerOne.moveDist = -1;
+
             } else {
                 if (playerOne.moveDist > 0) {
                     playerOne.movePlayer()
-                } else {
-                    playerTurn = false;
-                    playerTwo.resetMoveDist();
                 }
             }
         } else {
+
+            // check if player two's projectile has hit the ground, if it has switch turns
+            if (playerTwo.getCollisions() == "ChainCircleContact") {
+                playerTurn = true
+                playerOne.resetPlayerMotorSpeed();
+            } else if (playerTwo.getCollisions() == "PolygonCircleContact") {
+                console.log("Hit Player One!");
+                playerTurn = true;
+                playerOne.resetPlayerMotorSpeed();
+            }
+
             if (playerTwo.checkSpaceBarInput() && currentTime - lastFireTime >= fireCooldown) {
                 playerTwo.openFire(velX, velY);
                 shellVisible = true;
                 lastFireTime = currentTime;
-                playerTurn = true;
                 playerOne.resetMoveDist();
-                playerTwo.resetPlayerMotorSpeed();
+                playerTwo.moveDist = -1;
             } else {
                 if (playerTwo.moveDist > 0) {
                     playerTwo.movePlayer();
-                } else {
-                    playerTurn = true;
-                    playerOne.resetMoveDist();
                 }
             }
         }
@@ -128,6 +146,9 @@ export async function startGame() {
         }
 
         playerOne.updatePlayer();
+        playerOne.updatePosPlayerHealthBar();
+        playerOne.damagePlayerHealthBar();
+        playerTwo.updatePosPlayerHealthBar();
         playerTwo.updatePlayer();
         // debugRenderer.render();
     })
