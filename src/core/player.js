@@ -1,9 +1,10 @@
-import { Sprite, Graphics } from "pixi.js";
+import { Sprite, Graphics, Container } from "pixi.js";
 import { Vec2, Circle, RevoluteJoint, Polygon } from "planck";
 
 export class TankPlayer {
     constructor(playerX, playerY, app, playerTexture, scale, coordConverter, world, shellTexture) {
         this.hp = 100;
+        this.hpContainer = null;
         this.hpRedBarGraphic = null;
         this.hpGreenBarGraphic = null;
         this.world = world;
@@ -310,40 +311,57 @@ export class TankPlayer {
         const redGraphics = new Graphics();
         const greenGraphics = new Graphics();
 
+        this.hpContainer = new Container();
+
         const path = [0, 0, this.hp, 0, this.hp, 10, 0, 10];
         greenGraphics.poly(path);
         redGraphics.rect(-52, -60, 100, 10);
         redGraphics.fill(0xde3249);
         greenGraphics.fill(0x2ee651);
 
-        this.app.stage.addChild(redGraphics);
-        this.app.stage.addChild(greenGraphics);
         this.hpRedBarGraphic = redGraphics;
+        this.hpRedBarGraphic.zIndex = 999;
         this.hpGreenBarGraphic = greenGraphics;
+        this.hpGreenBarGraphic.zIndex = 1000;
+
+        this.hpContainer.addChild(this.hpRedBarGraphic, this.hpGreenBarGraphic);
+        this.hpContainer.zIndex = 1000;
+
+
+        this.app.stage.addChild(this.hpContainer);
+    }
+
+    hideHPBar() {
+        TweenMax.to(this.hpContainer, 2, { alpha: 0 });
+    }
+
+    revealHPBar() {
+        this.hpContainer.alpha = 1;
     }
 
     updatePosPlayerHealthBar() {
         this.hpRedBarGraphic.x = this.playerSprite.x;
-        this.hpRedBarGraphic.y = this.playerSprite.y;
+        this.hpRedBarGraphic.y = this.playerSprite.y + 110;
         this.hpGreenBarGraphic.x = this.playerSprite.x - 52;
-        this.hpGreenBarGraphic.y = this.playerSprite.y - 60;
+        this.hpGreenBarGraphic.y = this.playerSprite.y + 50;
     }
 
     updatePlayerHealthBar() {
-        //TODO: implement playerhp damage simulating hpbar decrease
 
         if (this.hp > 0) {
             this.hp -= 20;
         }
-        this.app.stage.removeChild(this.hpGreenBarGraphic);
+
+        this.hpContainer.removeChild(this.hpGreenBarGraphic);
         this.hpGreenBarGraphic = new Graphics();
 
         const path = [0, 0, this.hp, 0, this.hp, 10, 0, 10];
         this.hpGreenBarGraphic.poly(path);
         this.hpGreenBarGraphic.fill(0x2ee651);
         this.hpGreenBarGraphic.x = this.playerSprite.x - 52;
-        this.hpGreenBarGraphic.y = this.playerSprite.y - 60;
-        this.app.stage.addChild(this.hpGreenBarGraphic);
+        this.hpGreenBarGraphic.y = this.playerSprite.y + 50;
+        this.hpGreenBarGraphic.zIndex = 1000;
+        this.hpContainer.addChild(this.hpGreenBarGraphic);
     }
 
     getCollisions() {

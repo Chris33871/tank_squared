@@ -60,6 +60,9 @@ export async function startGame() {
     let isPlayerTwoHit = false;
     let isPlayerOneHit = false;
 
+    // change this value so the hpbar will hide every x seconds
+    const hpBarHideCooldown = 10;
+
     app.ticker.add(() => {
 
         world.step(1 / 60);
@@ -118,9 +121,6 @@ export async function startGame() {
 
         // TODO: While visible, run the action
         if (shellVisible) {
-            if (isPlayerTwoHit) {
-                console.log("isPlayerTwoHit: " + isPlayerTwoHit);
-            }
             const shellActive = playerOne.updateShell(mapGenerator, isPlayerOneHit) || playerTwo.updateShell(mapGenerator, isPlayerTwoHit);
             // TODO: Change from a visible flag to a collided with flag
             if (shellActive == 0) {
@@ -134,11 +134,28 @@ export async function startGame() {
         playerTwo.updatePosPlayerHealthBar();
         playerTwo.updatePlayer();
 
+        if (isPlayerOneHit) {
+            playerOne.revealHPBar();
+        } else if (isPlayerTwoHit) {
+            playerTwo.revealHPBar();
+        }
+
+        let time = performance.now();
+        time /= 1000;
+        time = Math.floor(time % 60);
+        if (time % hpBarHideCooldown == 0 && time > 0) {
+            console.log("Hiding HP Bar!");
+            playerOne.hideHPBar();
+            playerTwo.hideHPBar();
+        }
+
         isPlayerOneHit = false;
         isPlayerTwoHit = false;
 
-         //debugRenderer.render();
+        // debugRenderer.render();
+
     })
 }
+
 
 createMainMenu();
