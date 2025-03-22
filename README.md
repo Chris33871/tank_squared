@@ -80,3 +80,8 @@ my-pixi-game/\
 - [ ] Larger and more varied set of maps - Map generation (NJ)
 - [ ] Different tank options
 - [ ] Play against AI
+
+### Useful documentation:
+https://pixijs.download/dev/docs/index.html
+https://piqnt.com/planck.js/docs
+
