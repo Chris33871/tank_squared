@@ -115,6 +115,15 @@ export class MapGenerator {
         }
     }
 
+    getHeightAt(x) {
+        const points = this.getTerrainPointsFromMap();
+        if (x < 0 || x >= points.length) {
+            return null; // Out of bounds
+        }
+        console.log(points[Math.floor(x)]);
+        return points[Math.floor(x)]; // Return the height at the given x coordinate
+    }
+
     drawTerrain(terrainPoints, world, sf, app) {
         this.map = new Map(terrainPoints, world, sf, this.app);
         this.map.initialiseMap(app);

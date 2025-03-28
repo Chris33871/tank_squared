@@ -85,3 +85,48 @@ my-pixi-game/\
 - https://pixijs.download/dev/docs/index.html
 - https://piqnt.com/planck.js/docs
 
+### How to run:
+#### Node.js: 
+Download latest version of Node.js from this link: https://nodejs.org/en
+
+#### Ensure it's installed correctly:
+  ```bash
+  > node -v
+  #v22.14.0
+  > npm -v
+  #10.9.0
+  ```
+
+#### Clone repo:
+  ```bash
+  > git clone https://github.com/Chris33871/tank_squared.git
+  ```
+
+#### Install dependencies:
+  ```bash
+  > npm install
+  ```
+
+#### Ensure it's installed correctly:
+  ```bash
+  > npm list pixi.js planck
+  #your-project@1.0.0 /path/to/project
+  #├── pixi.js@8.9.1  
+  #└── planck@1.1.0
+  ```
+
+#### Run the code:
+  ```bash
+  > npx vite
+
+  # VITE v6.2.3  ready in 214 ms
+
+  # ➜  Local:   http://localhost:5173/
+  # ➜  Network: use --host to expose
+  # ➜  press h + enter to show help
+  ```
+
+#### Click the link and play!
+<p align="center">
+  <img src="./assets/images/homePage.png" alt="home page">
+</p>

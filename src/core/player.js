@@ -210,25 +210,41 @@ export class TankPlayer {
 
     movePlayer() {
         if (this.moveDist > 0) {
+            const screenX = this.playerSprite.x;
+            const screenWidth = this.app.renderer.width;
+            const tankWidth = this.playerSprite.width;
+
+            // Right movement
             if (this.keys['68']) {
-                this.springBack.spring.setMotorSpeed(-this.playerSpeed);
-                this.springMiddleBack.spring.setMotorSpeed(-this.playerSpeed);
-                this.springMiddleFront.spring.setMotorSpeed(-this.playerSpeed);
-                this.springFront.spring.setMotorSpeed(-this.playerSpeed);
-
-                this.playerSprite.scale.x = Math.abs(this.playerSprite.scale.x);
+                if (screenX < screenWidth - tankWidth/2) {
+                    this.springBack.spring.setMotorSpeed(-this.playerSpeed);
+                    this.springMiddleBack.spring.setMotorSpeed(-this.playerSpeed);
+                    this.springMiddleFront.spring.setMotorSpeed(-this.playerSpeed);
+                    this.springFront.spring.setMotorSpeed(-this.playerSpeed);
+                
+                    this.playerSprite.scale.x = Math.abs(this.playerSprite.scale.x);
+                }
+                else{
+                    this.resetPlayerMotorSpeed();
+                }
+                
+            // Left movement
             } else if (this.keys['65']) {
-                this.springBack.spring.setMotorSpeed(+this.playerSpeed);
-                this.springMiddleBack.spring.setMotorSpeed(+this.playerSpeed);
-                this.springMiddleFront.spring.setMotorSpeed(+this.playerSpeed);
-                this.springFront.spring.setMotorSpeed(+this.playerSpeed);
+                if(screenX > tankWidth/2){
+                    this.springBack.spring.setMotorSpeed(+this.playerSpeed);
+                    this.springMiddleBack.spring.setMotorSpeed(+this.playerSpeed);
+                    this.springMiddleFront.spring.setMotorSpeed(+this.playerSpeed);
+                    this.springFront.spring.setMotorSpeed(+this.playerSpeed);
 
-                this.playerSprite.scale.x = -Math.abs(this.playerSprite.scale.x);
-            } else if (!this.keys["65"] || !this.keys["68"]) {
-                this.springBack.spring.setMotorSpeed(0);
-                this.springMiddleBack.spring.setMotorSpeed(0);
-                this.springMiddleFront.spring.setMotorSpeed(0);
-                this.springFront.spring.setMotorSpeed(0);
+                    this.playerSprite.scale.x = -Math.abs(this.playerSprite.scale.x);
+                }
+                else{
+                    this.resetPlayerMotorSpeed();
+                }
+            }
+            // No movement
+             else if (!this.keys["65"] && !this.keys["68"]) {
+                this.resetPlayerMotorSpeed();
             }
         }
 
