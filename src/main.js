@@ -1,5 +1,4 @@
 import { Application, Assets } from "pixi.js";
-import { Slider } from "./core/slider.js";
 import { TankPlayer } from "./core/player";
 import { DebugRenderer } from "./core/debugOutlines.js";
 import { World, Vec2 } from "planck";
@@ -36,22 +35,24 @@ export async function startGame() {
     const shellTexture = await Assets.load("assets/images/bullet.png");
     const playerOneTexture = await Assets.load('assets/images/tank.png');
     const playerOneX = appWidth / 10;
-    const playerOneY = appHeight-mapGenerator.getHeightAt(playerOneX) + 50;
+    const playerOneY = appHeight - mapGenerator.getHeightAt(playerOneX) + 50;
     const playerOne = new TankPlayer(playerOneX, playerOneY, app, playerOneTexture, scaleFactor, converter, world, shellTexture);
     await playerOne.initialisePlayerSprite();
     await playerOne.initialiseShellSprite();
     await playerOne.initialisePlayerHealthBar();
     playerOne.setupKeyboardControls();
+    playerOne.setupCollisionHandler();
 
     // Adding second player
     const playerTwoTexture = await Assets.load('assets/images/tank.png');
     const playerTwoX = appWidth / 1.2;
-    const playerTwoY = appHeight-mapGenerator.getHeightAt(playerTwoX) + 50;
+    const playerTwoY = appHeight - mapGenerator.getHeightAt(playerTwoX) + 50;
     const playerTwo = new TankPlayer(playerTwoX, playerTwoY, app, playerTwoTexture, scaleFactor, converter, world, shellTexture);
     await playerTwo.initialisePlayerSprite();
     await playerTwo.initialiseShellSprite();
     await playerTwo.initialisePlayerHealthBar();
     playerTwo.setupKeyboardControls();
+    playerTwo.setupCollisionHandler();
 
     let playerTurn = true;
     app.ticker.maxFPS = 60;
@@ -71,17 +72,22 @@ export async function startGame() {
 
         world.step(1 / 60);
         const currentTime = Date.now();
+        // console.log("\nPlayer Turn: " + playerTurn);
+        // console.log("p1 hit tank body: " + playerOne.hitTankBody);
+        // console.log("p2 hit tank body: " + playerTwo.hitTankBody);
+
 
         if (playerTurn) {
             // check if player one's projectile has hit the ground, if it has switch turns
-            if (playerOne.getCollisions() == "ChainCircleContact") {
+            if (playerOne.checkIfProjectileHitGround()) {
                 playerTurn = false
                 playerOne.resetPlayerMotorSpeed();
-            } else if (playerOne.getCollisions() == "PolygonCircleContact") {
-                isPlayerTwoHit = true;
-                playerTurn = false;
-                playerOne.resetPlayerMotorSpeed();
             }
+            // else if (playerOne.hitTankBody) {
+            //     isPlayerTwoHit = true;
+            //     playerTurn = false;
+            //     playerOne.resetPlayerMotorSpeed();
+            // }
 
             if (playerOne.shotOutOfBounds) {
                 playerOne.shotOutOfBounds = false;
@@ -105,14 +111,15 @@ export async function startGame() {
         } else {
 
             // check if player two's projectile has hit the ground, if it has switch turns
-            if (playerTwo.getCollisions() == "ChainCircleContact") {
+            if (playerTwo.checkIfProjectileHitGround()) {
                 playerTurn = true
                 playerTwo.resetPlayerMotorSpeed();
-            } else if (playerTwo.getCollisions() == "PolygonCircleContact") {
-                isPlayerOneHit = true;
-                playerTurn = true;
-                playerTwo.resetPlayerMotorSpeed();
             }
+            // else if (playerTwo.hitTankBody) {
+            //     // isPlayerOneHit = true;
+            //     playerTurn = true;
+            //     playerTwo.resetPlayerMotorSpeed();
+            // }
 
             if (playerTwo.shotOutOfBounds) {
                 playerTwo.shotOutOfBounds = false;
@@ -166,7 +173,7 @@ export async function startGame() {
         isPlayerOneHit = false;
         isPlayerTwoHit = false;
 
-        // debugRenderer.render();
+        debugRenderer.render();
 
     })
 }

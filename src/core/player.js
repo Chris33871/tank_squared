@@ -1,8 +1,10 @@
-import { Sprite, Graphics, Container } from "pixi.js";
-import { Vec2, Circle, RevoluteJoint, Polygon } from "planck";
+import { Sprite, Graphics, Container, basisTranscoderUrls } from "pixi.js";
+import { Vec2, Circle, RevoluteJoint, Polygon, AABB } from "planck";
 
 export class TankPlayer {
     constructor(playerX, playerY, app, playerTexture, scale, coordConverter, world, shellTexture) {
+        this.collisionWorldHandler = false;
+        this.hitTankBody = false;
         this.hp = 100;
         this.hpContainer = null;
         this.hpRedBarGraphic = null;
@@ -300,9 +302,10 @@ export class TankPlayer {
             this.updatePlayerHealthBar();
         }
 
+        // check if the shell has gone out of bounds
         if (this.physicalShell) {
             const bodyPos = this.physicalShell.getPosition();
-            let contactType = this.getCollisions();
+
             this.shellSprite.x = bodyPos.x * this.scale;
             this.shellSprite.y = this.app.renderer.height - (bodyPos.y * this.scale);
 
@@ -314,16 +317,55 @@ export class TankPlayer {
             } else {
                 this.shotOutOfBounds = false;
             }
+        }
 
-            // check for other collision types
-            if (contactType == "ChainCircleContact") {
-                this.destroyTerrain(mapGenerator);
-                this.resetAndDestroyShell();
+        // check shell collisions for ground and player...
+        if (this.physicalShell) {
+
+            for (let contactList = this.physicalShell.getContactList(); contactList; contactList = contactList.next) {
+                let contact = contactList.contact;
+                let contactType = contact.m_evaluateFcn.name;
+                if (contactType == "ChainCircleContact") {
+                    this.destroyTerrain(mapGenerator);
+                    this.resetAndDestroyShell();
+                } else if (this.hitTankBody) {
+                    this.hitTankBody = false;
+                    // this.resetAndDestroyShell();
+                }
             }
+        }
+    }
 
-            if (contactType == "PolygonCircleContact") {
-                console.log("Bullet has collided with the body of a tank!");
-                this.resetAndDestroyShell();
+    setupCollisionHandler() {
+        if (!this.collisionWorldHandler) {
+            this.collisionWorldHandler = true;
+            this.world.on('begin-contact', (contact) => {
+                const fixtureA = contact.getFixtureA();
+                const fixtureB = contact.getFixtureB();
+
+                const shapeA = fixtureA.getShape().getType();
+                const shapeB = fixtureB.getShape().getType();
+
+                if ((shapeA == "polygon" && shapeB == "circle") || (shapeA == "circle" && shapeB == "polygon")) {
+                    console.log("Projectile hit tank body");
+                    this.hitTankBody = true;
+                    // console.log("\nShape A: " + shapeA);
+                    // console.log("Shape B: " + shapeB);
+                }
+            });
+        }
+    }
+
+    checkIfProjectileHitGround() {
+        if (this.physicalShell) {
+            for (let contactList = this.physicalShell.getContactList(); contactList; contactList = contactList.next) {
+                let contact = contactList.contact;
+                let contactType = contact.m_evaluateFcn.name;
+                if (contactType == "ChainCircleContact") {
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
     }
@@ -392,16 +434,6 @@ export class TankPlayer {
         this.hpGreenBarGraphic.y = this.playerSprite.y + 50;
         this.hpGreenBarGraphic.zIndex = 1000;
         this.hpContainer.addChild(this.hpGreenBarGraphic);
-    }
-
-    getCollisions() {
-        if (this.physicalShell) {
-            for (let contactList = this.physicalShell.getContactList(); contactList; contactList = contactList.next) {
-                let contact = contactList.contact;
-                let contactType = contact.m_evaluateFcn.name;
-                return contactType;
-            }
-        }
     }
 
     destroyTerrain(mapGenerator) {
